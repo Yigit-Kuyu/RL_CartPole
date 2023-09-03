@@ -14,16 +14,11 @@ from sklearn.preprocessing import MinMaxScaler # for normalization
 from IPython.display import clear_output
 import matplotlib.pyplot as plt
 
-# Link:
-# https://github.com/adibyte95/CartPole-OpenAI-GYM
+# About the problem:
+# hhttps://www.gymlibrary.dev/environments/classic_control/cart_pole/
 
 
-'''
-NOTE
-action:
-0 for left 
-1 for right
-'''
+
 checkpoint = ModelCheckpoint('model/model_dnn.h5', monitor='val_loss', verbose=1, save_best_only=True)
 no_of_timesteps = 500
 min_score = 100
@@ -60,12 +55,6 @@ def plot_res(values, title=''):
     plt.show()
 
 
-# Not:
-# Aşağıdaki dataset eksik oluşturuluyor, dataset her bir state (X) icib sadece tek bir action (Y)'a gore
-# olusturuluyor. Fakat her bir state için olası actionların her birini vermesi gerekirdu.
-# Çünkü ML model 2 output lu sen Y değeri olarak tek output lu değer sokuyorsun ve iki output predict
-# etmesini bekliyorsun.
-
 # generate the training data
 def generate_training_data(no_of_episodes):
     print('generating training data')
@@ -84,13 +73,6 @@ def generate_training_data(no_of_episodes):
         for t in range(no_of_timesteps):
             action = random.randrange(0, 2) # left or right
 
-            ## debugging code
-            '''
-            if action == 0:
-                left = left + 1
-            else:
-                right = right + 1
-            '''
             # observation or state refers the same thing.
             new_observation, reward, done, info = env.step(action) # observation: [position, velocity, angle, angular velocity]
             score = score + reward # cumulative reward
@@ -106,11 +88,6 @@ def generate_training_data(no_of_episodes):
                     print('episode : ', i_episode, ' score : ', score)
                 break
         env.reset()
-    # debugging code
-    '''
-    print('left : ', left)
-    print('right: ',right)
-    '''
     # converting them into numpy array
     X_copy=X.copy()
     X = np.asarray(X)
@@ -148,8 +125,6 @@ def get_model():
     model.add(Activation('relu'))
     model.add(Dropout(.5))
 
-    #model.add(Dense(1)) # Kapatildi
-    #model.add(Activation('sigmoid')) # Kapatildi
     
     num_of_actions=2
     model.add(Dense(num_of_actions))  # two neurons in the output layer, each represents the q value for one of the action
@@ -196,11 +171,9 @@ def train_model(model):
 
 
 # testing the model
-def testing(model):
-    # model = load_model('model/model.h5')
-    #env = gym.make('CartPole-v0').env # orj
+def testing(model): 
     env = gym.make('CartPole-v1').env
-    #env = wrappers.Monitor(env, 'nn_files', force=True)
+    
     env.render(mode='human')
     observation = env.reset()
     no_of_rounds = 10
@@ -229,15 +202,7 @@ def testing(model):
                 Q_values= model.predict(data) # current state'teki her bir action icin bir Q degeri, cunku NN 2 outputlu
                 # argmax: gives the maximum index
                 action=np.argmax(Q_values) # Choosen action
-                '''
-                #  Kapatildi
-                output = model.predict(data)
-                # checking if the required action is left or right
-                if output[0][0] >= .5:
-                    action = 1
-                elif output[0][0] < .5:
-                    action = 0
-                '''
+              
             new_observation, reward, done, info = env.step(action) # observation: [position, velocity, angle, angular velocity]
             prev_obs = new_observation
             # calculating total reward
