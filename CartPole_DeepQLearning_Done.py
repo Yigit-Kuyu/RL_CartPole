@@ -8,14 +8,13 @@ import random
 from torch.autograd import Variable
 from IPython import display
 
-# Link:
-# https://github.com/ritakurban/Practical-Data-Science/blob/master/DQL_CartPole.ipynb
+
 
 # About Deep and Double Q learning:
 # https://builtin.com/artificial-intelligence/double-deep-q-learning
 
 # Difference between double and deep q learning:
-https://datascience.stackexchange.com/questions/38632/what-is-difference-between-the-ddqn-and-dqn#:~:text=From%20what%20I%20understand%2C%20the,values%20over%20all%20possible%20actions.
+#https://datascience.stackexchange.com/questions/38632/what-is-difference-between-the-ddqn-and-dqn#:~:text=From%20what%20I%20understand%2C%20the,values%20over%20all%20possible%20actions.
 
 
 
@@ -74,13 +73,13 @@ def q_learning(env, model, episodes, gamma=0.9,
         done = False
         total = 0
 
-        while not done: # Episode bitene kadar devam ettiriyor
+        while not done: # iterade until the episode is done
             # Implement greedy search policy to explore the state space
             if random.random() < epsilon:
                 action = env.action_space.sample()
             else:
-                q_values = model.predict(state) # current state'teki her bir action icin bir Q degeri
-                action = torch.argmax(q_values).item() # Q degerlerinin en buyugunun indeksi
+                q_values = model.predict(state) # q value for each state 
+                action = torch.argmax(q_values).item() # take max index
 
             # Render the game screen and update it with each step
             #env.render(mode='human')
@@ -106,16 +105,14 @@ def q_learning(env, model, episodes, gamma=0.9,
             
             # Take action and add reward to total
             # Apply the action to the environment
-            next_state, reward, done, _ = env.step(action)
-            # 1) Secilen action'a gore next state ve reward belirleniyor.
+            next_state, reward, done, _ = env.step(action) # Determine next state and reward based on action
 
             # Update total and memory
             total += reward
             memory.append((state, action, next_state, reward, done))
 
-            # 2) Current state'in, action space'deki tum olasi action'lar icin
-            # q_values'lar tahmin ediliyor (bizim action space'imiz 0 ve 1)
-            q_values = model.predict(state).tolist() # tensor tipini list'e cevirdi
+            
+            q_values = model.predict(state).tolist() # tensor to list
 
             if done:
                 if not replay:
@@ -134,12 +131,11 @@ def q_learning(env, model, episodes, gamma=0.9,
                 # Update network weights using the last step only
                 #  the neural network is used as a function approximator to estimate the Q-values for different state-action pairs.
 
-                # 3) 1. adimda bulunan next state icin tum olasi Q value'lar tahmin ediliyor
-                q_values_next = model.predict(next_state)
+                q_values_next = model.predict(next_state) # Predict the q value for the next state
                 kk=torch.max(q_values_next).item()
-                # 4) Update the current state-action pair of Q values
+                # Update the current state-action pair of Q values
                 q_values[action] = reward + gamma * kk # Q(s,a) = r + γ * max(Q(s',a'))
-                # 5) Yeni update edilmis degere gore learning
+                
                 model.update(state, q_values) # tranning loop
 
             state = next_state

@@ -11,13 +11,8 @@ import copy
 
 
 
-# Link:
-# https://github.com/ritakurban/Practical-Data-Science/blob/master/DQL_CartPole.ipynb
-
-
-
-
-
+# About DDQL:
+# https://towardsdatascience.com/double-deep-q-networks-905dd8325412
 
 
 def plot_res(values, title=''):
@@ -76,13 +71,13 @@ def q_learning(env, Build_DoubleDQN, episodes, gamma=0.9,
         done = False
         total = 0
 
-        while not done: # Episode bitene kadar devam ettiriyor
+        while not done:
             # Implement greedy search policy to explore the state space
             if random.random() < epsilon:
                 action = env.action_space.sample()
             else:
-                q_values = Build_DoubleDQN.predict(state) # current state'teki her bir action icin bir Q degeri
-                action = torch.argmax(q_values).item() # Q degerlerinin en buyugunun indeksi
+                q_values = Build_DoubleDQN.predict(state) # Q values for all actions
+                action = torch.argmax(q_values).item() 
 
             # Render the game screen and update it with each step
             env.render(mode='human')
@@ -95,16 +90,14 @@ def q_learning(env, Build_DoubleDQN, episodes, gamma=0.9,
             # Take action and add reward to total
             # Apply the action to the environment
             next_state, reward, done, _ = env.step(action)
-            # 1) Secilen action'a gore next state ve reward belirleniyor.
+            
 
             # Update total and memory
             total += reward
             memory.append((state, action, next_state, reward, done))
 
-            # 2) Current state'in, action space'deki tum olasi action'lar icin
-            # q_values'lar tahmin ediliyor (bizim action space'imiz 0 ve 1)
-            q_values = Build_DoubleDQN.predict(state).tolist() # tensor tipini list'e cevirdi
-
+            
+            q_values = Build_DoubleDQN.predict(state).tolist()
             if done:
                 if not replay:
                     q_values[action] = reward
@@ -122,12 +115,12 @@ def q_learning(env, Build_DoubleDQN, episodes, gamma=0.9,
                 # Update network weights using the last step only
                 #  the neural network is used as a function approximator to estimate the Q-values for different state-action pairs.
 
-                # 3) 1. adimda bulunan next state icin tum olasi Q value'lar tahmin ediliyor
+                
                 q_values_next = BuildNN.predict(next_state)
                 kk=torch.max(q_values_next).item()
-                # 4) Update the current state-action pair of Q values
+                # Update the current state-action pair of Q values
                 q_values[action] = reward + gamma * kk # Q(s,a) = r + γ * max(Q(s',a'))
-                # 5) Yeni update edilmis degere gore learning
+               
                 BuildNN.update(state, q_values) # tranning loop
 
             state = next_state
@@ -171,7 +164,7 @@ class Build_DoubleDQN():
         # Temporal difference:
         loss = self.criterion(y_pred, Variable(torch.Tensor(current_state_q_values))) # calculates the error between the predicted Q-values and the target Q-values
         self.model.zero_grad() # sets the gradients of all parameters in the neural network to zero
-        loss.backward() # (Performansta direkt etkili) The gradients of the loss function with respect to the weights of the neural network are calculated using backpropagation.
+        loss.backward() #  The gradients of the loss function with respect to the weights of the neural network are calculated using backpropagation.
         self.optimizer.step() # updates the parameters of the neural network using the calculated gradients.
         # "self.optimizer" is responsible for updating the model parameters based on the gradients with respect to loss function
         # step() in "self.optimizer.step()"  is called on the optimizer object to apply these updates to the neural network.
