@@ -1,2 +1,2 @@
 # Aim
-The repo is for implementation the different RL methods on CartPole game.
+The repo is for the implementation of the different RL methods via the CartPole game in gym library.
