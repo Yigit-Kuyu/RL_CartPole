@@ -196,8 +196,8 @@ def testing(model):
             else:
                 data = np.asarray(prev_obs)
                 data = np.reshape(data, (1, 4))
-                # sigmoid function ile output verilen model [0,1] arasındadır output daima, aslında bir probabilty verir
-                # Q_values action probabilty'i verir, sigmoid activation function'dan dolayı
+                # sigmoid function will give the probability in the range [0,1]
+                
                 
                 Q_values= model.predict(data) # current state'teki her bir action icin bir Q degeri, cunku NN 2 outputlu
                 # argmax: gives the maximum index
